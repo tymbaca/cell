@@ -34,30 +34,26 @@ main :: proc() {
         imgui_rl.build_font_atlas()
 
         allocator := context.allocator
-        context.allocator = mem.panic_allocator()
-        context.logger = log.create_console_logger(.Debug, allocator = allocator)
-
-        component_types := []typeid{Position, Velocity, Cell, Selected}
-
         world: ecs.World
         w := &world
-        ecs.init(w, component_types, allocator)
+        ecs.init(w, {Position, Velocity, Cell, Selected}, allocator)
         defer ecs.destroy(w)
 
+        context.allocator = mem.panic_allocator()
         context.temp_allocator = w.frame_allocator
+        context.logger = log.create_console_logger(.Debug, allocator = allocator)
 
         ecs.register(w, velocity_system)
         ecs.register(w, spawn_system)
         ecs.register(w, select_system)
 
         ctx := Context {
-                resistence = 0.001,
+                resistence = 1,
         }
         w.userdata = &ctx
 
         for !rl.WindowShouldClose() {
                 ecs.update(w)
-                log.info(w.delta)
 
                 imgui_rl.process_events()
                 imgui_rl.new_frame()
@@ -145,7 +141,7 @@ spawn_system :: proc(w: ^ecs.World) {
         }
 }
 
-DEFAULT_SPEED :: 0.1
+DEFAULT_SPEED :: 100
 
 create_cell :: proc(w: ^ecs.World, pos: Position) {
         e := ecs.create(w)

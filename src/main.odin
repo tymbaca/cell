@@ -1,6 +1,9 @@
 #+vet explicit-allocators
 package src
 
+import "core:fmt"
+import "base:runtime"
+import "core:log"
 import "core:mem"
 import "core:math/linalg"
 import "core:math/rand"
@@ -20,9 +23,6 @@ Context :: struct {
 }
 
 main :: proc() {
-        allocator := context.allocator
-        context.allocator = mem.panic_allocator()
-        context.temp_allocator = mem.panic_allocator()
 
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "cell")
         defer rl.CloseWindow()
@@ -34,11 +34,16 @@ main :: proc() {
         defer imgui_rl.shutdown()
         imgui_rl.build_font_atlas()
 
+        allocator := context.allocator
+        context.allocator = mem.panic_allocator()
+        context.temp_allocator = mem.panic_allocator()
+        context.logger = log.create_console_logger(.Debug, allocator = allocator)
+
         component_types := []typeid{Position, Velocity, Cell, Selected}
 
         world: ecs.World
         w := &world
-        ecs.init(w, component_types, context.allocator)
+        ecs.init(w, component_types, allocator)
         defer ecs.destroy(w)
 
         ecs.register(w, velocity_system)
@@ -90,10 +95,13 @@ Cell :: struct {
 Selected :: struct {}
 
 select_system :: proc(w: ^ecs.World) {
+        if !is_mouse_focused() {
+                return
+        }
+
         if !rl.IsMouseButtonPressed(.LEFT) {
                 return
         }
-        mouse := rl.GetMousePosition()
 
         // hold ctrl to select multiple
         if !rl.IsKeyDown(.LEFT_CONTROL) {
@@ -106,7 +114,7 @@ select_system :: proc(w: ^ecs.World) {
                 pos := ecs.get(w, e, Position)
                 cell := ecs.get(w, e, Cell)
 
-                if linalg.distance(auto_cast mouse, auto_cast pos) < cell.radius {
+                if linalg.distance(auto_cast rl.GetMousePosition(), auto_cast pos) < cell.radius {
                         if ecs.has(w, e, Selected) {
                                 ecs.unset(w, e, Selected)
                         } else {
@@ -147,4 +155,15 @@ create_cell :: proc(w: ^ecs.World, pos: Position) {
                 color = rl.GREEN, 
                 radius = 10,
         })
+}
+
+is_mouse_focused :: proc() -> bool {
+        imgui_menu_hovered := imgui.IsAnyItemHovered()
+        log.info("imgui_menu_hovered", imgui_menu_hovered)
+
+        if imgui_menu_hovered {
+                return false
+        }
+
+        return true
 }

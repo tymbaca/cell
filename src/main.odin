@@ -23,10 +23,9 @@ Context :: struct {
 }
 
 main :: proc() {
-
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "cell")
         defer rl.CloseWindow()
-        rl.SetTargetFPS(60)
+        rl.SetTargetFPS(500)
 
         imgui.CreateContext(nil)
         defer imgui.DestroyContext(nil)
@@ -36,7 +35,6 @@ main :: proc() {
 
         allocator := context.allocator
         context.allocator = mem.panic_allocator()
-        context.temp_allocator = mem.panic_allocator()
         context.logger = log.create_console_logger(.Debug, allocator = allocator)
 
         component_types := []typeid{Position, Velocity, Cell, Selected}
@@ -46,17 +44,20 @@ main :: proc() {
         ecs.init(w, component_types, allocator)
         defer ecs.destroy(w)
 
+        context.temp_allocator = w.frame_allocator
+
         ecs.register(w, velocity_system)
         ecs.register(w, spawn_system)
         ecs.register(w, select_system)
 
         ctx := Context {
-                resistence = 1,
+                resistence = 0.001,
         }
         w.userdata = &ctx
 
         for !rl.WindowShouldClose() {
                 ecs.update(w)
+                log.info(w.delta)
 
                 imgui_rl.process_events()
                 imgui_rl.new_frame()
@@ -144,11 +145,13 @@ spawn_system :: proc(w: ^ecs.World) {
         }
 }
 
+DEFAULT_SPEED :: 0.1
+
 create_cell :: proc(w: ^ecs.World, pos: Position) {
         e := ecs.create(w)
         ecs.set(w, e, pos)
         // ecs.set(w, e, Velocity{rand.float32_range(-1, 1), rand.float32_range(-1, 1)})
-        ecs.set(w, e, Velocity{1, 1})
+        ecs.set(w, e, Velocity{DEFAULT_SPEED, DEFAULT_SPEED})
         ecs.set(w, e, Cell{
                 energy = 100, 
                 capacity = 100, 
@@ -158,10 +161,9 @@ create_cell :: proc(w: ^ecs.World, pos: Position) {
 }
 
 is_mouse_focused :: proc() -> bool {
-        imgui_menu_hovered := imgui.IsAnyItemHovered()
-        log.info("imgui_menu_hovered", imgui_menu_hovered)
+        io := imgui.GetIO()
 
-        if imgui_menu_hovered {
+        if io.WantCaptureMouse {
                 return false
         }
 

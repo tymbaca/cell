@@ -1,3 +1,6 @@
 [submodule "lib/ecs"]
 	path = lib/ecs
 	url = git@github.com:tymbaca/ecs.git
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = git@github.com:tymbaca/odin-imgui.git

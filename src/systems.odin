@@ -94,12 +94,13 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
         ecs.set(w, e, Cell{
                 energy = 100, 
                 capacity = 100, 
-                color = rl.GREEN, 
-                radius = 5,
+                color = choose([]rl.Color{rl.ORANGE, rl.WHITE, rl.YELLOW, rl.GREEN, rl.BLUE, rl.RED, rl.PURPLE, rl.PINK}),
+                radius = rand.float32_range(5, 20),
         })
+        power := rand.float32_range(10, 60)
         ecs.set(w, e, Flagellum{
-                power = 15,
-                max_power = 15,
+                power = power,
+                max_power = power,
         })
 }
 
@@ -111,4 +112,9 @@ is_mouse_focused :: proc() -> bool {
         }
 
         return true
+}
+
+
+choose :: proc(s: $T/[]$E) -> E {
+        return s[rand.int_range(0, len(s))]
 }

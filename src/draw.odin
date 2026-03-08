@@ -12,7 +12,7 @@ import "lib:ecs"
 
 FLAG_LEN :: 5
 
-draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, texture: rl.Texture2D) {
+draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture: rl.Texture2D) {
         tintLoc := rl.GetShaderLocation(shader, "tint")
 
         for e in ecs.query(w, {Transform, Cell}) {
@@ -23,15 +23,24 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, texture: rl.Texture2D) {
                 tint := to_glsl_color(cell.color)
                 rl.SetShaderValue(shader, tintLoc, &tint, .VEC4)
                 rl.BeginShaderMode(shader)
-                rl.DrawTexturePro(texture, {0, 0, f32(texture.width), f32(texture.height)}, {trans.pos.x-cell.radius, trans.pos.y-cell.radius, cell.radius*2, cell.radius*2}, {0, 0}, 0, cell.color)
+                if flag, ok := ecs.get(w, e, Flagellum); ok {
+                        rl.DrawTexturePro(flag_texture, 
+                                frame(64, 128, flag.animation.current_frame), 
+                                {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*4}, 
+                                {cell.radius, cell.radius}, 
+                                trans.rot*linalg.DEG_PER_RAD+90, cell.color,
+                        )
+                }
+                rl.DrawTexturePro(cell_texture, 
+                        {0, 0, f32(cell_texture.width), f32(cell_texture.height)}, 
+                        {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*2}, 
+                        {cell.radius, cell.radius}, 
+                        trans.rot*linalg.DEG_PER_RAD, cell.color,
+                )
                 rl.EndShaderMode()
 
                 if ecs.has(w, e, Selected) {
                         rl.DrawPolyLines(auto_cast trans.pos, 10, cell.radius, 0, SELECT_COLOR)
-                }
-                if flag, ok := ecs.get(w, e, Flagellum); ok {
-                        flag_start := trans.pos - dir * cell.radius
-                        rl.DrawLineV(flag_start, flag_start - dir * FLAG_LEN, cell.color)
                 }
         }
 }
@@ -42,11 +51,13 @@ draw_menu :: proc(w: ^ecs.World) {
                         trans := ecs.get(w, e, Transform)
                         vel := ecs.get(w, e, Velocity)
                         cell := ecs.get(w, e, Cell)
+                        flag := ecs.get(w, e, Flagellum)
 
                         if im.CollapsingHeader(fmt.caprint(e.id, allocator = w.frame_allocator), {.DefaultOpen}) {
                                 im.Text(fmt.caprintf("trans:  %v", trans, allocator = w.frame_allocator))
                                 im.Text(fmt.caprintf("vel:  %v", vel, allocator = w.frame_allocator))
                                 im.Text(fmt.caprintf("cell: %v", cell, allocator = w.frame_allocator))
+                                im.Text(fmt.caprintf("flag: %v", flag, allocator = w.frame_allocator))
                         }
                 }
         }

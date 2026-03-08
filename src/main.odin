@@ -27,6 +27,7 @@ main :: proc() {
         rl.SetTargetFPS(500)
         
         cell_texture := rl.LoadTexture("resources/cell.png")
+        flag_texture := rl.LoadTexture("resources/flag.png")
         cell_shader := rl.LoadShader("src/shader/cell.vert.glsl", "src/shader/cell.frag.glsl")
 
         imgui.CreateContext(nil)
@@ -65,7 +66,7 @@ main :: proc() {
                 rl.ClearBackground({40, 40, 60, 255})
                 rl.DrawCircleGradient(CENTER_X, CENTER_Y, 300, rl.BLUE, rl.DARKBLUE)
 
-                draw_cells(w, cell_shader, cell_texture)
+                draw_cells(w, cell_shader, cell_texture, flag_texture)
                 draw_menu(w)
 
                 imgui.Render()

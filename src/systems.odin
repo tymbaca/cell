@@ -67,6 +67,8 @@ flagellum_system :: proc(w: ^ecs.World) {
 
                 trans.rot += rand.float32_range(-10, 10) * w.delta
 
+                animation_update(&flag.animation, w.delta)
+
                 ecs.set(w, e, trans)
                 ecs.set(w, e, vel)
                 ecs.set(w, e, cell)
@@ -101,6 +103,10 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
         ecs.set(w, e, Flagellum{
                 power = power,
                 max_power = power,
+                animation = {
+                        frame_count = 4,
+                        frame_time = 1 / power,
+                },
         })
 }
 

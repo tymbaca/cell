@@ -21,6 +21,7 @@ Selected :: struct {}
 Flagellum :: struct {
         power: f32,
         max_power: f32,
+        animation: Animation,
 }
 
 to_glsl_color :: proc(c: rl.Color) -> (res: vec4) {

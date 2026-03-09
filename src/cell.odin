@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:time"
 import "core:math"
 import "core:math/rand"
 import "lib:ecs"
@@ -9,6 +10,7 @@ import "core:math/noise"
 
 Cell :: struct {
         energy:   f32,
+        starving_started: Maybe(time.Tick),
         capacity: f32,
         color:    rl.Color,
         radius:   f32,
@@ -71,19 +73,42 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
 
 CELL_RADIUS_MIN :: 6
 CELL_RADIUS_PER_ENERGY :: 0.05
+STARVE_BEFORE_DEATH :: 5*time.Second
 
 cell_system :: proc(w: ^ecs.World) {
         for e in ecs.query(w, {Cell, Transform}) {
                 cell := ecs.get(w, e, Cell)
                 trans := ecs.get(w, e, Transform)
-                cell.radius = CELL_RADIUS_MIN + (cell.energy * CELL_RADIUS_PER_ENERGY)
 
+                // update radius
+                cell.radius = CELL_RADIUS_MIN + (cell.energy * CELL_RADIUS_PER_ENERGY)
                 if drag, ok := ecs.get(w, e, Draggable); ok {
                         drag.radius = cell.radius
                         ecs.set(w, e, drag)
                 }
+
+                // starvation
+                if cell.energy > 0 {
+                        cell.starving_started = nil
+                } else {
+                        if starvation_started, ok := cell.starving_started.?; ok {
+                                // starvation already started, check if time to die
+                                if time.tick_since(starvation_started) > STARVE_BEFORE_DEATH {
+                                        kill_cell(w, e)
+                                        continue
+                                }
+                        } else {
+                                // starvation starts here
+                                cell.starving_started = time.tick_now()
+                        }
+                }
+
                 ecs.set(w, e, cell)
         }
+}
+
+kill_cell :: proc(w: ^ecs.World, e: ecs.Entity) {
+        ecs.kill(w, e)
 }
 
 FLAGELLUM_ENERGY_COST :: 0.5
@@ -124,7 +149,7 @@ flagellum_system :: proc(w: ^ecs.World) {
         }
 }
 
-LINK_PULL_MULTIPLIER :: 1
+LINK_PULL_MULTIPLIER :: 2
 
 debug_link_create_system :: proc(w: ^ecs.World) {
         q := ecs.query(w, {Selected})

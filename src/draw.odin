@@ -25,19 +25,21 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
                 cell := ecs.get(w, e, Cell)
                 dir := rot_to_dir(trans.rot)
 
+                tint := rl.ColorLerp(cell.color, rl.GREEN, 0.5)
+
                 if flag, ok := ecs.get(w, e, Flagellum); ok {
                         rl.DrawTexturePro(flag_texture, 
                                 frame(64, 128, flag.animation.current_frame), 
                                 {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*4}, 
                                 {cell.radius, cell.radius}, 
-                                trans.rot*linalg.DEG_PER_RAD+90, cell.color,
+                                trans.rot*linalg.DEG_PER_RAD+90, tint,
                         )
                 }
                 rl.DrawTexturePro(cell_texture, 
                         {0, 0, f32(cell_texture.width), f32(cell_texture.height)}, 
                         {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*2}, 
                         {cell.radius, cell.radius}, 
-                        trans.rot*linalg.DEG_PER_RAD, cell.color,
+                        trans.rot*linalg.DEG_PER_RAD, tint,
                 )
 
                 if ecs.has(w, e, Selected) {
@@ -85,4 +87,22 @@ draw_bvh :: proc(node: ^bvh.Node(collider.Circle, ecs.Entity), color: rl.Color, 
 
         draw_bvh(node.left, color, draw = draw, depth = depth + 1)
         draw_bvh(node.right, color, draw = draw, depth = depth + 1)
+}
+
+to_glsl_color :: proc(c: rl.Color) -> (res: vec4) {
+        res.x = f32(c.x) / 255
+        res.y = f32(c.y) / 255
+        res.z = f32(c.z) / 255
+        res.a = f32(c.a) / 255
+
+        return res
+}
+
+from_glsl_color :: proc(c: vec4) -> (res: rl.Color) {
+        res.x = u8(c.x * 255)
+        res.y = u8(c.y * 255)
+        res.z = u8(c.z * 255)
+        res.a = u8(c.a * 255)
+
+        return res
 }

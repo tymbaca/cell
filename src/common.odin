@@ -24,15 +24,6 @@ Velocity :: distinct vec2
 
 Selected :: struct {}
 
-to_glsl_color :: proc(c: rl.Color) -> (res: vec4) {
-        res.x = f32(c.x) / 255
-        res.y = f32(c.y) / 255
-        res.z = f32(c.z) / 255
-        res.a = f32(c.a) / 255
-
-        return res
-}
-
 select_system :: proc(w: ^ecs.World) {
         if !is_mouse_focused() {
                 return

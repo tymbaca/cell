@@ -61,6 +61,12 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
 
 draw_menu :: proc(w: ^ecs.World) {
         ctx := (^Context)(w.userdata)
+
+        if im.Begin("context") {
+                im.Text(fmt.caprintf("edit_mode: %s", ctx.edit_mode, allocator = w.frame_allocator))
+        }
+        im.End()
+
         if im.Begin("cells") {
                 all_cells := ecs.query(w, {Cell})
                 im.Text(fmt.caprintf("total cells: %d", len(all_cells), allocator = w.frame_allocator))
@@ -98,6 +104,17 @@ draw_bvh :: proc(node: ^bvh.Node(collider.Circle, ecs.Entity), color: rl.Color, 
 
         draw_bvh(node.left, color, draw = draw, depth = depth + 1)
         draw_bvh(node.right, color, draw = draw, depth = depth + 1)
+}
+
+draw_lights :: proc(w: ^ecs.World) {
+        for e in ecs.query(w, {Light, Transform}) {
+                trans := ecs.get(w, e, Transform)
+                light := ecs.get(w, e, Light)
+                rl.DrawCircleGradient(i32(trans.pos.x), i32(trans.pos.y), light.radius, 
+                        rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, light.power), 
+                        rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, light.power*0.6),
+                )
+        }
 }
 
 to_glsl_color :: proc(c: rl.Color) -> (res: vec4) {

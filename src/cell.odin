@@ -33,7 +33,13 @@ Link :: struct {
         b: ecs.Entity,
 }
 
+Photosynthesis :: struct {}
+
 debug_spawn_system :: proc(w: ^ecs.World) {
+        if ctx(w).edit_mode != .Cells {
+                return
+        }
+
         if rl.IsMouseButtonDown(.RIGHT) {
                 debug_create_cell(w, {pos = auto_cast rl.GetMousePosition(), rot = rand.float32_range(0, 2*math.PI)})
         }
@@ -73,7 +79,7 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
 
 CELL_RADIUS_MIN :: 6
 CELL_RADIUS_PER_ENERGY :: 0.05
-STARVE_BEFORE_DEATH :: 5*time.Second
+STARVE_BEFORE_DEATH :: 5 * time.Second
 
 cell_system :: proc(w: ^ecs.World) {
         for e in ecs.query(w, {Cell, Transform}) {

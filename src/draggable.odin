@@ -15,7 +15,38 @@ DRAG_MULTIPLIER :: 5
 draggable_system :: proc(w: ^ecs.World) {
         mouse := rl.GetMousePosition()
 
-        for e in ecs.query(w, {Draggable, Transform, Velocity}) {
+        if rl.IsMouseButtonReleased(.LEFT) {
+                for e in ecs.query(w, {Draggable}) {
+                        drag := ecs.get(w, e, Draggable)
+                        drag.dragging = false
+                        ecs.set(w, e, drag)
+                }
+        }
+        
+        filter: []typeid
+        switch ctx(w).edit_mode {
+        case .Light:
+                filter = []typeid{Draggable, Transform, Velocity, Light}
+        case .Cells:
+                filter = []typeid{Draggable, Transform, Velocity, Cell}
+        case .None:
+                filter = []typeid{Draggable, Transform, Velocity}
+        }
+
+        if rl.IsMouseButtonPressed(.LEFT) {
+                for e in ecs.query(w, filter) {
+                        trans := ecs.get(w, e, Transform)
+                        drag := ecs.get(w, e, Draggable)
+
+                        if linalg.distance(trans.pos, mouse) < drag.radius {
+                                drag.dragging = true
+                                ecs.set(w, e, drag)
+                                break
+                        }
+                }
+        }
+
+        for e in ecs.query(w, filter) {
                 drag := ecs.get(w, e, Draggable)
                 vel := ecs.get(w, e, Velocity)
                 trans := ecs.get(w, e, Transform)
@@ -26,28 +57,5 @@ draggable_system :: proc(w: ^ecs.World) {
                 }
 
                 ecs.set(w, e, vel)
-        }
-
-        if rl.IsMouseButtonReleased(.LEFT) {
-                for e in ecs.query(w, {Draggable}) {
-                        drag := ecs.get(w, e, Draggable)
-                        drag.dragging = false
-                        ecs.set(w, e, drag)
-                }
-
-                return
-        }
-        
-        if rl.IsMouseButtonPressed(.LEFT) {
-                for e in ecs.query(w, {Draggable, Transform}) {
-                        trans := ecs.get(w, e, Transform)
-                        drag := ecs.get(w, e, Draggable)
-
-                        if linalg.distance(trans.pos, mouse) < drag.radius {
-                                drag.dragging = true
-                                ecs.set(w, e, drag)
-                                break
-                        }
-                }
         }
 }

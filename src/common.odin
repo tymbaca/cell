@@ -24,7 +24,22 @@ Velocity :: distinct vec2
 
 Selected :: struct {}
 
-select_system :: proc(w: ^ecs.World) {
+edit_mode_system :: proc(w: ^ecs.World) {
+        #partial switch rl.GetKeyPressed() {
+        case .ONE:
+                ctx(w).edit_mode = .Cells
+        case .TWO:
+                ctx(w).edit_mode = .Light
+        case .ZERO:
+                ctx(w).edit_mode = .None
+        }
+}
+
+cell_select_system :: proc(w: ^ecs.World) {
+        if ctx(w).edit_mode != .Cells {
+                return
+        }
+
         if !is_mouse_focused() {
                 return
         }

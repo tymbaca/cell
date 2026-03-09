@@ -18,15 +18,26 @@ CENTER_X :: SCREEN_WIDTH / 2
 CENTER_Y :: SCREEN_HEIGHT / 2
 CENTER :: vec2{CENTER_X, CENTER_Y}
 
+Mode :: enum {
+        None,
+        Cells,
+        Light,
+}
+
 Context :: struct {
         resistence:  f32,
         dish_radius: f32,
         bvh:         bvh.Node(collider.Circle, ecs.Entity), // invalidated on ecs.update calls
+        edit_mode:   Mode,
         debug:       Debug_Options,
 }
 
 Debug_Options :: struct {
         bvh_draw_depth: int,
+}
+
+ctx :: proc(w: ^ecs.World) -> ^Context {
+        return (^Context)(w.userdata)
 }
 
 main :: proc() {
@@ -47,7 +58,7 @@ main :: proc() {
         allocator := context.allocator
         world: ecs.World
         w := &world
-        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Link, Random_Rotation, Selected, Draggable}, allocator)
+        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Link, Random_Rotation, Light, Ready, Not_Ready, Selected, Draggable}, allocator)
         defer ecs.destroy(w)
 
         ecs.register(w, debug_system)
@@ -57,10 +68,13 @@ main :: proc() {
         ecs.register(w, cell_system)
         ecs.register(w, flagellum_system)
         ecs.register(w, link_system)
+        ecs.register(w, create_light_system)
+        ecs.register(w, light_system)
         ecs.register(w, collision_system)
         ecs.register(w, draggable_system)
         ecs.register(w, velocity_system)
-        ecs.register(w, select_system)
+        ecs.register(w, cell_select_system)
+        ecs.register(w, edit_mode_system)
 
         context.allocator = mem.panic_allocator()
         context.temp_allocator = w.frame_allocator
@@ -87,6 +101,7 @@ main :: proc() {
                 rl.DrawFPS(10, 10)
                 draw_dish(w, {CENTER_X, CENTER_Y}, ctx.dish_radius)
                 draw_cells(w, cell_shader, cell_texture, flag_texture)
+                draw_lights(w)
                 draw_menu(w)
                 draw_bvh(&ctx.bvh, rl.WHITE, ctx.debug.bvh_draw_depth)
 

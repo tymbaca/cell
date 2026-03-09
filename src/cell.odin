@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "src:collider"
 import "core:math"
 import "core:math/rand"
 import "lib:ecs"
@@ -12,6 +13,7 @@ Cell :: struct {
         capacity: f32,
         color:    rl.Color,
         radius:   f32,
+        collider: collider.Circle,
 }
 
 Flagellum :: struct {
@@ -64,6 +66,25 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
         })
 }
 
+CELL_RADIUS_MIN :: 6
+CELL_RADIUS_PER_ENERGY :: 0.05
+
+cell_system :: proc(w: ^ecs.World) {
+        for e in ecs.query(w, {Cell, Transform}) {
+                cell := ecs.get(w, e, Cell)
+                trans := ecs.get(w, e, Transform)
+                cell.radius = CELL_RADIUS_MIN + (cell.energy * CELL_RADIUS_PER_ENERGY)
+                cell.collider.radius = cell.radius
+                cell.collider.center = trans.pos
+
+                if drag, ok := ecs.get(w, e, Draggable); ok {
+                        drag.radius = cell.radius
+                        ecs.set(w, e, drag)
+                }
+                ecs.set(w, e, cell)
+        }
+}
+
 FLAGELLUM_ENERGY_COST :: 0.5
 
 flagellum_system :: proc(w: ^ecs.World) {
@@ -99,21 +120,5 @@ flagellum_system :: proc(w: ^ecs.World) {
                 ecs.set(w, e, vel)
                 ecs.set(w, e, cell)
                 ecs.set(w, e, flag)
-        }
-}
-
-CELL_RADIUS_MIN :: 6
-CELL_RADIUS_PER_ENERGY :: 0.05
-
-cell_system :: proc(w: ^ecs.World) {
-        for e in ecs.query(w, {Cell}) {
-                cell := ecs.get(w, e, Cell)
-                cell.radius = CELL_RADIUS_MIN + (cell.energy * CELL_RADIUS_PER_ENERGY)
-
-                if drag, ok := ecs.get(w, e, Draggable); ok {
-                        drag.radius = cell.radius
-                        ecs.set(w, e, drag)
-                }
-                ecs.set(w, e, cell)
         }
 }

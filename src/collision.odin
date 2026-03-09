@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import rl "vendor:raylib"
 import "core:math/linalg"
 import "lib:bvh"
 import "src:collider"
@@ -10,6 +11,7 @@ import "lib:ecs"
 COLLISION_PUSH_MULTIPLIER :: 10
 
 collision_system :: proc(w: ^ecs.World) {
+        ctx := (^Context)(w.userdata)
         tree: bvh.Node(collider.Circle, ecs.Entity)
 
         for e in ecs.query(w, {Cell, Transform, Velocity}) {
@@ -44,4 +46,6 @@ collision_system :: proc(w: ^ecs.World) {
                 ecs.set(w, col.a.body, a_vel)
                 ecs.set(w, col.b.body, b_vel)
         }
+
+        ctx.bvh = tree
 }

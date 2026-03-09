@@ -1,6 +1,8 @@
 #+vet explicit-allocators
 package src
 
+import "src:collider"
+import "lib:bvh"
 import "base:runtime"
 import "core:log"
 import "core:mem"
@@ -17,8 +19,14 @@ CENTER_Y :: SCREEN_HEIGHT / 2
 CENTER :: vec2{CENTER_X, CENTER_Y}
 
 Context :: struct {
-        resistence: f32,
+        resistence:  f32,
         dish_radius: f32,
+        bvh:         bvh.Node(collider.Circle, ecs.Entity), // invalidated on ecs.update calls
+        debug:       Debug_Options,
+}
+
+Debug_Options :: struct {
+        bvh_draw_depth: int,
 }
 
 main :: proc() {
@@ -49,6 +57,7 @@ main :: proc() {
         ecs.register(w, flagellum_system)
         ecs.register(w, select_system)
         ecs.register(w, draggable_system)
+        ecs.register(w, debug_system)
 
         context.allocator = mem.panic_allocator()
         context.temp_allocator = w.frame_allocator
@@ -73,6 +82,7 @@ main :: proc() {
                 draw_dish(w, {CENTER_X, CENTER_Y}, ctx.dish_radius)
                 draw_cells(w, cell_shader, cell_texture, flag_texture)
                 draw_menu(w)
+                draw_bvh(&ctx.bvh, rl.WHITE, ctx.debug.bvh_draw_depth)
 
                 imgui.Render()
                 imgui_rl.render_draw_data(imgui.GetDrawData())

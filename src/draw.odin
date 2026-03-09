@@ -2,9 +2,8 @@
 package src
 
 import "core:math/linalg"
-import "core:log"
-import "vendor:raylib/rlgl"
-import "core:math"
+import "lib:bvh"
+import "src:collider"
 import "core:fmt"
 import im "lib:imgui"
 import rl "vendor:raylib"
@@ -48,9 +47,11 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
 }
 
 draw_menu :: proc(w: ^ecs.World) {
+        ctx := (^Context)(w.userdata)
         if im.Begin("cells") {
                 all_cells := ecs.query(w, {Cell})
                 im.Text(fmt.caprintf("total cells: %d", len(all_cells), allocator = w.frame_allocator))
+                im.Text(fmt.caprintf("bvh depth draw: %d", ctx.debug.bvh_draw_depth, allocator = w.frame_allocator))
                 for e, i in ecs.query(w, {Selected, Cell, Transform, Velocity}) {
                         trans := ecs.get(w, e, Transform)
                         vel := ecs.get(w, e, Velocity)
@@ -68,4 +69,20 @@ draw_menu :: proc(w: ^ecs.World) {
                 }
         }
         im.End()
+}
+
+draw_bvh :: proc(node: ^bvh.Node(collider.Circle, ecs.Entity), color: rl.Color, draw := -1, depth := 0) {
+        if node == nil {
+                return
+        }
+
+        if draw != -2 {
+                if draw == -1 || draw == depth {
+                        rl.DrawCircleLinesV(auto_cast node.volume.center, node.volume.radius, color)
+                        rl.DrawText(rl.TextFormat("%i", depth), i32(node.volume.center.x), i32(node.volume.center.y), i32(node.volume.radius), rl.WHITE)
+                }
+        }
+
+        draw_bvh(node.left, color, draw = draw, depth = depth + 1)
+        draw_bvh(node.right, color, draw = draw, depth = depth + 1)
 }

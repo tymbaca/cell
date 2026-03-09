@@ -136,7 +136,7 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
                 },
         })
         ecs.set(w, e, Random_Rotation{
-                seed = 5,
+                seed = rand.int63(),
                 mul = 1,
         })
 }

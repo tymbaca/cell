@@ -27,23 +27,23 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
                 cell := ecs.get(w, e, Cell)
                 dir := rot_to_dir(trans.rot)
 
-                tint := to_glsl_color(cell.color)
-                // rl.SetShaderValue(shader, tintLoc, &tint, .VEC4)
+                // tint := to_glsl_color(cell.color)
+                // rl.SetShaderValue(shader, tintLoc, &tint, .VEC4) THIS don't work, because it sets the value for the whole batch draw calls
 
-                rlgl.Color4f(tint.r, tint.g, tint.b, tint.a)
+                // rlgl.Color4f(tint.r, tint.g, tint.b, tint.a) // FIX must be somewhere here
                 if flag, ok := ecs.get(w, e, Flagellum); ok {
                         rl.DrawTexturePro(flag_texture, 
                                 frame(64, 128, flag.animation.current_frame), 
                                 {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*4}, 
                                 {cell.radius, cell.radius}, 
-                                trans.rot*linalg.DEG_PER_RAD+90, rl.WHITE,
+                                trans.rot*linalg.DEG_PER_RAD+90, cell.color,
                         )
                 }
                 rl.DrawTexturePro(cell_texture, 
                         {0, 0, f32(cell_texture.width), f32(cell_texture.height)}, 
                         {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*2}, 
                         {cell.radius, cell.radius}, 
-                        trans.rot*linalg.DEG_PER_RAD, rl.WHITE,
+                        trans.rot*linalg.DEG_PER_RAD, cell.color,
                 )
 
                 if ecs.has(w, e, Selected) {

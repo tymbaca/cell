@@ -3,7 +3,7 @@
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec4 vertexColor;
-in vec4 vertexTint;
+// in vec4 vertexTint;
 
 out vec2 fragTexCoord;
 out vec4 fragColor;
@@ -16,6 +16,6 @@ void main()
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
     gl_Position = mvp * vec4(vertexPosition, 1.0);
-    fragTint = vertexTint;
+    fragTint = vertexColor;
 
 }

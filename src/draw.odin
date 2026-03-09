@@ -18,7 +18,9 @@ draw_dish :: proc(w: ^ecs.World, center: vec2, radius: f32) {
 }
 
 draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture: rl.Texture2D) {
-        tintLoc := rl.GetShaderLocation(shader, "tint")
+        // tintLoc := rl.GetShaderLocation(shader, "tint")
+        rl.BeginShaderMode(shader)
+        defer rl.EndShaderMode()
 
         for e in ecs.query(w, {Transform, Cell}) {
                 trans := ecs.get(w, e, Transform)
@@ -26,23 +28,23 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
                 dir := rot_to_dir(trans.rot)
 
                 tint := to_glsl_color(cell.color)
-                rl.SetShaderValue(shader, tintLoc, &tint, .VEC4)
-                rl.BeginShaderMode(shader)
+                // rl.SetShaderValue(shader, tintLoc, &tint, .VEC4)
+
+                rlgl.Color4f(tint.r, tint.g, tint.b, tint.a)
                 if flag, ok := ecs.get(w, e, Flagellum); ok {
                         rl.DrawTexturePro(flag_texture, 
                                 frame(64, 128, flag.animation.current_frame), 
                                 {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*4}, 
                                 {cell.radius, cell.radius}, 
-                                trans.rot*linalg.DEG_PER_RAD+90, cell.color,
+                                trans.rot*linalg.DEG_PER_RAD+90, rl.WHITE,
                         )
                 }
                 rl.DrawTexturePro(cell_texture, 
                         {0, 0, f32(cell_texture.width), f32(cell_texture.height)}, 
                         {trans.pos.x, trans.pos.y, cell.radius*2, cell.radius*2}, 
                         {cell.radius, cell.radius}, 
-                        trans.rot*linalg.DEG_PER_RAD, cell.color,
+                        trans.rot*linalg.DEG_PER_RAD, rl.WHITE,
                 )
-                rl.EndShaderMode()
 
                 if ecs.has(w, e, Selected) {
                         rl.DrawPolyLines(auto_cast trans.pos, 10, cell.radius, 0, SELECT_COLOR)

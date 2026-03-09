@@ -1,11 +1,12 @@
 #version 330
 
 in vec2 fragTexCoord;
+in vec4 fragTint;
 out vec4 finalColor;
 
 uniform sampler2D texture0;          // The circular texture (soccer ball, cell, etc.)
-uniform vec4 tint = vec4(1);    
-
+// uniform vec4 tint = vec4(1);    
+//
 // // Collision data (max 8 simultaneous collisions)
 // uniform int collisionCount;           // Number of active collisions (0 to 8)
 // uniform vec3 collisions[8];            // Each: x,y = direction vector (normalized), z = strength (0–1)
@@ -22,5 +23,5 @@ void main()
 {
     // Sample the texture at the deformed coordinates
     vec4 texColor = texture(texture0, fragTexCoord);
-    finalColor = texColor * tint;
+    finalColor = texColor * fragTint;
 }

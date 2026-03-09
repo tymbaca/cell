@@ -45,6 +45,7 @@ main :: proc() {
         ecs.register(w, velocity_system)
         ecs.register(w, debug_spawn_system)
         ecs.register(w, cell_system)
+        ecs.register(w, collision_system)
         ecs.register(w, flagellum_system)
         ecs.register(w, select_system)
         ecs.register(w, draggable_system)

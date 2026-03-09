@@ -20,10 +20,10 @@ check_collisions :: proc(
         root: ^Node($V, $B),
         intersect_proc: proc(a, b: V) -> bool,
         arena: ^mem.Dynamic_Arena,
-) -> (result: []Collision(V, B), total_checks: int) {
+) -> (result: []Collision(V, B)) {
         acc := make([dynamic]Collision(V, B), allocator = mem.dynamic_arena_allocator(arena))
-        _check_self(root, intersect_proc, &acc, &total_checks)
-        return acc[:], total_checks
+        _check_self(root, intersect_proc, &acc)
+        return acc[:]
 }
 
 // check_collisions_with – collision detection between two independent BVHs
@@ -31,10 +31,10 @@ check_collisions_with :: proc(
         this, with: ^Node($V, $B),
         intersect_proc: proc(a, b: V) -> bool,
         arena: ^mem.Dynamic_Arena,
-) -> (result: []Collision(V, B), total_checks: int) {
+) -> (result: []Collision(V, B)) {
         acc := make([dynamic]Collision(V, B), allocator = mem.dynamic_arena_allocator(arena))
-        _check_between(this, with, intersect_proc, &acc, &total_checks)
-        return acc[:], total_checks
+        _check_between(this, with, intersect_proc, &acc)
+        return acc[:]
 }
 
 // _check_self – recursively process a single tree for internal collisions
@@ -43,15 +43,14 @@ _check_self :: proc(
         node: ^Node($V, $B),
         intersect_proc: proc(a, b: V) -> bool,
         acc: ^[dynamic]Collision(V, B),
-        total_checks: ^int,
 ) {
         if node == nil || _is_leaf(node) {
                 return
         }
         // internal node: check left vs left, right vs right, and left vs right
-        _check_self(node.left,  intersect_proc, acc, total_checks)
-        _check_self(node.right, intersect_proc, acc, total_checks)
-        _check_between(node.left, node.right, intersect_proc, acc, total_checks)
+        _check_self(node.left,  intersect_proc, acc)
+        _check_self(node.right, intersect_proc, acc)
+        _check_between(node.left, node.right, intersect_proc, acc)
 }
 
 @(private)
@@ -65,14 +64,12 @@ _check_between :: proc(
         a, b: ^Node($V, $B),
         intersect_proc: proc(a, b: V) -> bool,
         acc: ^[dynamic]Collision(V, B),
-        total_checks: ^int,
 ) {
         if a == nil || b == nil {
                 return
         }
 
         // always test bounding volume intersection first
-        total_checks^ += 1
         if !intersect_proc(a.volume, b.volume) {
                 return
         }
@@ -86,20 +83,20 @@ _check_between :: proc(
         // at least one is internal
         if !_is_leaf(a) && !_is_leaf(b) {
                 // both internal: recurse into all four child combinations
-                _check_between(a.left,  b.left,  intersect_proc, acc, total_checks)
-                _check_between(a.left,  b.right, intersect_proc, acc, total_checks)
-                _check_between(a.right, b.left,  intersect_proc, acc, total_checks)
-                _check_between(a.right, b.right, intersect_proc, acc, total_checks)
+                _check_between(a.left,  b.left,  intersect_proc, acc)
+                _check_between(a.left,  b.right, intersect_proc, acc)
+                _check_between(a.right, b.left,  intersect_proc, acc)
+                _check_between(a.right, b.right, intersect_proc, acc)
                 return
         }
 
         // one leaf, one internal
         if !_is_leaf(a) { // a internal, b leaf
-                _check_between(a.left,  b, intersect_proc, acc, total_checks)
-                _check_between(a.right, b, intersect_proc, acc, total_checks)
+                _check_between(a.left,  b, intersect_proc, acc)
+                _check_between(a.right, b, intersect_proc, acc)
         } else { // b internal
-                _check_between(a, b.left,  intersect_proc, acc, total_checks)
-                _check_between(a, b.right, intersect_proc, acc, total_checks)
+                _check_between(a, b.left,  intersect_proc, acc)
+                _check_between(a, b.right, intersect_proc, acc)
         }
 }
 

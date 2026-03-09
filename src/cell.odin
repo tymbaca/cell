@@ -1,7 +1,6 @@
 #+vet explicit-allocators
 package src
 
-import "src:collider"
 import "core:math"
 import "core:math/rand"
 import "lib:ecs"
@@ -13,7 +12,6 @@ Cell :: struct {
         capacity: f32,
         color:    rl.Color,
         radius:   f32,
-        collider: collider.Circle,
 }
 
 Flagellum :: struct {
@@ -74,8 +72,6 @@ cell_system :: proc(w: ^ecs.World) {
                 cell := ecs.get(w, e, Cell)
                 trans := ecs.get(w, e, Transform)
                 cell.radius = CELL_RADIUS_MIN + (cell.energy * CELL_RADIUS_PER_ENERGY)
-                cell.collider.radius = cell.radius
-                cell.collider.center = trans.pos
 
                 if drag, ok := ecs.get(w, e, Draggable); ok {
                         drag.radius = cell.radius

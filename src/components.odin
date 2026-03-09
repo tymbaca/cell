@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:math/noise"
 import rl "vendor:raylib"
 
 vec2 :: [2]f32
@@ -22,6 +23,12 @@ Flagellum :: struct {
         power: f32,
         max_power: f32,
         animation: Animation,
+}
+
+Random_Rotation :: struct {
+        seed:  i64,
+        coord: [2]f64,
+        mul:   f32
 }
 
 to_glsl_color :: proc(c: rl.Color) -> (res: vec4) {

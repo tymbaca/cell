@@ -14,9 +14,11 @@ SCREEN_HEIGHT :: 800
 
 CENTER_X :: SCREEN_WIDTH / 2
 CENTER_Y :: SCREEN_HEIGHT / 2
+CENTER :: vec2{CENTER_X, CENTER_Y}
 
 Context :: struct {
         resistence: f32,
+        dish_radius: f32,
 }
 
 
@@ -39,12 +41,13 @@ main :: proc() {
         allocator := context.allocator
         world: ecs.World
         w := &world
-        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Selected}, allocator)
+        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Random_Rotation, Selected}, allocator)
         defer ecs.destroy(w)
 
         ecs.register(w, velocity_system)
         ecs.register(w, debug_spawn_system)
         ecs.register(w, flagellum_system)
+        ecs.register(w, random_rot_system)
         ecs.register(w, select_system)
 
         context.allocator = mem.panic_allocator()
@@ -53,6 +56,7 @@ main :: proc() {
 
         ctx := Context {
                 resistence = 1,
+                dish_radius = 300,
         }
         w.userdata = &ctx
 
@@ -64,7 +68,7 @@ main :: proc() {
                 imgui.NewFrame()
                 rl.BeginDrawing()
                 rl.ClearBackground({40, 40, 60, 255})
-                rl.DrawCircleGradient(CENTER_X, CENTER_Y, 300, rl.BLUE, rl.DARKBLUE)
+                rl.DrawCircleGradient(CENTER_X, CENTER_Y, ctx.dish_radius, rl.BLUE, rl.DARKBLUE)
 
                 draw_cells(w, cell_shader, cell_texture, flag_texture)
                 draw_menu(w)

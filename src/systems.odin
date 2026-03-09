@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:math/noise"
 import "core:math/rand"
 import "core:math"
 import "core:math/linalg"
@@ -50,6 +51,17 @@ velocity_system :: proc(w: ^ecs.World) {
                 vel = vel / (1 + ctx.resistence * w.delta)
                 trans.pos += auto_cast vel * w.delta
 
+                to_center := CENTER - trans.pos
+                dist_from_center := linalg.length(to_center)
+                if cell, ok := ecs.get(w, e, Cell); ok {
+                        dist_from_center += cell.radius
+                }
+                if dist_from_center > ctx.dish_radius {
+                        vel = linalg.reflect(vel, auto_cast linalg.normalize(to_center)) * 0.8
+                        pushback := linalg.normalize(to_center) * (dist_from_center - ctx.dish_radius) * w.delta * 100
+                        vel += Velocity(pushback)
+                }
+
                 ecs.set(w, e, trans)
                 ecs.set(w, e, vel)
         }
@@ -62,10 +74,9 @@ flagellum_system :: proc(w: ^ecs.World) {
                 cell := ecs.get(w, e, Cell)
                 flag := ecs.get(w, e, Flagellum)
 
-                add_vel := rot_to_dir(trans.rot) * flag.power * w.delta
-                vel += auto_cast add_vel
-
-                trans.rot += rand.float32_range(-10, 10) * w.delta
+                add_vel := rot_to_dir(trans.rot) * flag.power * 10
+                add_vel /= cell.radius
+                vel += auto_cast add_vel * w.delta
 
                 animation_update(&flag.animation, w.delta)
 
@@ -76,12 +87,28 @@ flagellum_system :: proc(w: ^ecs.World) {
         }
 }
 
+random_rot_system :: proc(w: ^ecs.World) {
+        for e in ecs.query(w, {Transform, Random_Rotation, Flagellum}) {
+                trans := ecs.get(w, e, Transform)
+                rr := ecs.get(w, e, Random_Rotation)
+
+                rr.coord.x += f64(w.delta)
+                val := noise.noise_2d(rr.seed, rr.coord)
+                val = val * 2 - 1 // [0, 1] -> [-1, 1]
+                val *= rr.mul * w.delta
+                trans.rot += val
+
+                ecs.set(w, e, trans)
+                ecs.set(w, e, rr)
+        }
+}
+
 rot_to_dir :: proc(rot: f32) -> vec2 {
         return {math.cos(rot), math.sin(rot)}
 }
 
 debug_spawn_system :: proc(w: ^ecs.World) {
-        if rl.IsMouseButtonPressed(.RIGHT) {
+        if rl.IsMouseButtonDown(.RIGHT) {
                 debug_create_cell(w, {pos = auto_cast rl.GetMousePosition(), rot = rand.float32_range(0, 2*math.PI)})
         }
 }
@@ -105,8 +132,12 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
                 max_power = power,
                 animation = {
                         frame_count = 4,
-                        frame_time = 1 / power,
+                        frame_time = 2 / power,
                 },
+        })
+        ecs.set(w, e, Random_Rotation{
+                seed = 5,
+                mul = 1,
         })
 }
 

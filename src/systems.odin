@@ -57,7 +57,7 @@ velocity_system :: proc(w: ^ecs.World) {
                         dist_from_center += cell.radius
                 }
                 if dist_from_center > ctx.dish_radius {
-                        vel = linalg.reflect(vel, auto_cast linalg.normalize(to_center)) * 0.8
+                        vel = linalg.reflect(vel, auto_cast linalg.normalize(to_center))
                         pushback := linalg.normalize(to_center) * (dist_from_center - ctx.dish_radius) * w.delta * 100
                         vel += Velocity(pushback)
                 }
@@ -120,11 +120,12 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
         ecs.set(w, e, trans)
         // ecs.set(w, e, Velocity{rand.float32_range(-1, 1), rand.float32_range(-1, 1)})
         ecs.set(w, e, Velocity(rl.GetMouseDelta()))
+        radius := rand.float32_range(5, 20)
         ecs.set(w, e, Cell{
                 energy = 100, 
                 capacity = 100, 
                 color = choose([]rl.Color{rl.ORANGE, rl.WHITE, rl.YELLOW, rl.GREEN, rl.BLUE, rl.RED, rl.PURPLE, rl.PINK}),
-                radius = rand.float32_range(5, 20),
+                radius = radius,
         })
         power := rand.float32_range(10, 60)
         ecs.set(w, e, Flagellum{
@@ -138,6 +139,10 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
         ecs.set(w, e, Random_Rotation{
                 seed = rand.int63(),
                 mul = 1,
+        })
+        ecs.set(w, e, Draggable{
+                dragging = false,
+                radius = radius,
         })
 }
 

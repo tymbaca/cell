@@ -52,12 +52,14 @@ draw_menu :: proc(w: ^ecs.World) {
                         vel := ecs.get(w, e, Velocity)
                         cell := ecs.get(w, e, Cell)
                         flag := ecs.get(w, e, Flagellum)
+                        drag := ecs.get(w, e, Draggable)
 
                         if im.CollapsingHeader(fmt.caprint(e.id, allocator = w.frame_allocator), {.DefaultOpen}) {
                                 im.Text(fmt.caprintf("trans:  %v", trans, allocator = w.frame_allocator))
                                 im.Text(fmt.caprintf("vel:  %v", vel, allocator = w.frame_allocator))
                                 im.Text(fmt.caprintf("cell: %v", cell, allocator = w.frame_allocator))
                                 im.Text(fmt.caprintf("flag: %v", flag, allocator = w.frame_allocator))
+                                im.Text(fmt.caprintf("drag: %v", drag, allocator = w.frame_allocator))
                         }
                 }
         }

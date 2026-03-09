@@ -41,7 +41,7 @@ main :: proc() {
         allocator := context.allocator
         world: ecs.World
         w := &world
-        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Random_Rotation, Selected}, allocator)
+        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Random_Rotation, Selected, Draggable}, allocator)
         defer ecs.destroy(w)
 
         ecs.register(w, velocity_system)
@@ -49,6 +49,7 @@ main :: proc() {
         ecs.register(w, flagellum_system)
         ecs.register(w, random_rot_system)
         ecs.register(w, select_system)
+        ecs.register(w, draggable_system)
 
         context.allocator = mem.panic_allocator()
         context.temp_allocator = w.frame_allocator

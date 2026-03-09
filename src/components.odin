@@ -11,14 +11,18 @@ Transform :: struct {
         pos: vec2,
         rot: f32, // radians
 }
+
 Velocity :: distinct vec2
+
 Cell :: struct {
         energy:   f32,
         capacity: f32,
         color:    rl.Color,
         radius:   f32,
 }
+
 Selected :: struct {}
+
 Flagellum :: struct {
         power: f32,
         max_power: f32,
@@ -28,7 +32,7 @@ Flagellum :: struct {
 Random_Rotation :: struct {
         seed:  i64,
         coord: [2]f64,
-        mul:   f32
+        mul:   f32,
 }
 
 to_glsl_color :: proc(c: rl.Color) -> (res: vec4) {

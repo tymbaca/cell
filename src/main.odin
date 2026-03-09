@@ -66,6 +66,9 @@ main :: proc() {
         ctx := Context {
                 resistence = 1,
                 dish_radius = 300,
+                debug = {
+                        bvh_draw_depth = -2,
+                },
         }
         w.userdata = &ctx
 

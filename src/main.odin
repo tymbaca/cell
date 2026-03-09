@@ -21,12 +21,10 @@ Context :: struct {
         dish_radius: f32,
 }
 
-
-
 main :: proc() {
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "cell")
         defer rl.CloseWindow()
-        rl.SetTargetFPS(500)
+        rl.SetTargetFPS(60)
         
         cell_texture := rl.LoadTexture("resources/cell.png")
         flag_texture := rl.LoadTexture("resources/flag.png")
@@ -46,8 +44,8 @@ main :: proc() {
 
         ecs.register(w, velocity_system)
         ecs.register(w, debug_spawn_system)
+        ecs.register(w, cell_system)
         ecs.register(w, flagellum_system)
-        ecs.register(w, random_rot_system)
         ecs.register(w, select_system)
         ecs.register(w, draggable_system)
 

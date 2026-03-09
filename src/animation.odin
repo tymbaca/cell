@@ -1,3 +1,4 @@
+#+vet explicit-allocators
 package src
 
 import rl "vendor:raylib"

@@ -12,6 +12,11 @@ import "lib:ecs"
 
 FLAG_LEN :: 5
 
+
+draw_dish :: proc(w: ^ecs.World, center: vec2, radius: f32) {
+        rl.DrawCircleGradient(i32(center.x), i32(center.y), radius, rl.WHITE, rl.GRAY)
+}
+
 draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture: rl.Texture2D) {
         tintLoc := rl.GetShaderLocation(shader, "tint")
 

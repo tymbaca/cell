@@ -56,7 +56,7 @@ velocity_system :: proc(w: ^ecs.World) {
                 if cell, ok := ecs.get(w, e, Cell); ok {
                         dist_from_center += cell.radius
                 }
-                if dist_from_center > ctx.dish_radius {
+                if dist_from_center > ctx.dish_radius && faces_out_of_dish(auto_cast vel, auto_cast to_center) {
                         vel = linalg.reflect(vel, auto_cast linalg.normalize(to_center))
                         pushback := linalg.normalize(to_center) * (dist_from_center - ctx.dish_radius) * w.delta * 100
                         vel += Velocity(pushback)
@@ -65,6 +65,18 @@ velocity_system :: proc(w: ^ecs.World) {
                 ecs.set(w, e, trans)
                 ecs.set(w, e, vel)
         }
+}
+
+faces_out_of_dish :: proc(vel: vec2, edge_normal: vec2) -> bool {
+        if linalg.length(vel) == 0 {
+                return false
+        }
+
+        if linalg.dot(linalg.normalize(vel), linalg.normalize(edge_normal)) < 0 {
+                return true
+        }
+
+        return false
 }
 
 flagellum_system :: proc(w: ^ecs.World) {

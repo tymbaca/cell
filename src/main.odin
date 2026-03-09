@@ -69,8 +69,8 @@ main :: proc() {
                 imgui.NewFrame()
                 rl.BeginDrawing()
                 rl.ClearBackground({40, 40, 60, 255})
-                rl.DrawCircleGradient(CENTER_X, CENTER_Y, ctx.dish_radius, rl.BLUE, rl.DARKBLUE)
 
+                draw_dish(w, {CENTER_X, CENTER_Y}, ctx.dish_radius)
                 draw_cells(w, cell_shader, cell_texture, flag_texture)
                 draw_menu(w)
 

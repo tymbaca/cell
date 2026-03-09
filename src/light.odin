@@ -35,6 +35,10 @@ create_light_system :: proc(w: ^ecs.World) {
                         trans := ecs.get(w, e, Transform)
                         light := ecs.get(w, e, Light)
                         light.radius = linalg.distance(trans.pos, mouse)
+
+                        light.power += rl.GetMouseWheelMove() * 0.05
+                        light.power = rl.Clamp(light.power, 0, 1)
+
                         ecs.set(w, e, light)
                 }
         }

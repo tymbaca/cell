@@ -107,12 +107,14 @@ draw_bvh :: proc(node: ^bvh.Node(collider.Circle, ecs.Entity), color: rl.Color, 
 }
 
 draw_lights :: proc(w: ^ecs.World) {
+        rl.BeginBlendMode(.ADDITIVE)
+        defer rl.EndBlendMode()
         for e in ecs.query(w, {Light, Transform}) {
                 trans := ecs.get(w, e, Transform)
                 light := ecs.get(w, e, Light)
                 rl.DrawCircleGradient(i32(trans.pos.x), i32(trans.pos.y), light.radius, 
                         rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, light.power), 
-                        rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, light.power*0.6),
+                        rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, 0),
                 )
         }
 }

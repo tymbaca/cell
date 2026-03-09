@@ -18,7 +18,6 @@ draw_dish :: proc(w: ^ecs.World, center: vec2, radius: f32) {
 }
 
 draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture: rl.Texture2D) {
-        // tintLoc := rl.GetShaderLocation(shader, "tint")
         rl.BeginShaderMode(shader)
         defer rl.EndShaderMode()
 
@@ -27,10 +26,6 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
                 cell := ecs.get(w, e, Cell)
                 dir := rot_to_dir(trans.rot)
 
-                // tint := to_glsl_color(cell.color)
-                // rl.SetShaderValue(shader, tintLoc, &tint, .VEC4) THIS don't work, because it sets the value for the whole batch draw calls
-
-                // rlgl.Color4f(tint.r, tint.g, tint.b, tint.a) // FIX must be somewhere here
                 if flag, ok := ecs.get(w, e, Flagellum); ok {
                         rl.DrawTexturePro(flag_texture, 
                                 frame(64, 128, flag.animation.current_frame), 

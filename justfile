@@ -8,5 +8,5 @@ debug:
     odin build src -debug {{BUILD_FLAGS}} -out:{{OUT}} 
     lldb {{OUT}}
 
-submodules-update:
+update-submodules:
     git submodule update --recursive --remote

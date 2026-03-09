@@ -11,7 +11,6 @@ import "lib:ecs"
 
 FLAG_LEN :: 5
 
-
 draw_dish :: proc(w: ^ecs.World, center: vec2, radius: f32) {
         rl.DrawCircleGradient(i32(center.x), i32(center.y), radius, rl.GRAY, rl.DARKGRAY)
 }
@@ -45,6 +44,18 @@ draw_cells :: proc(w: ^ecs.World, shader: rl.Shader, cell_texture, flag_texture:
                 if ecs.has(w, e, Selected) {
                         rl.DrawPolyLines(auto_cast trans.pos, 10, cell.radius, 0, SELECT_COLOR)
                 }
+        }
+
+        for e in ecs.query(w, {Link}) {
+                link := ecs.get(w, e, Link)
+                a_trans := ecs.get(w, link.a, Transform)
+                b_trans := ecs.get(w, link.b, Transform)
+                // a_cell := ecs.get(w, link.a, Cell)
+                // b_cell := ecs.get(w, link.b, Cell)
+                // a_vel := ecs.get(w, link.a, Velocity)
+                // b_vel := ecs.get(w, link.b, Velocity)
+
+                rl.DrawLineV(a_trans.pos, b_trans.pos, rl.RAYWHITE)
         }
 }
 

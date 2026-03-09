@@ -26,6 +26,11 @@ Random_Rotation :: struct {
         mul:   f32,
 }
 
+Link :: struct {
+        a: ecs.Entity,
+        b: ecs.Entity,
+}
+
 debug_spawn_system :: proc(w: ^ecs.World) {
         if rl.IsMouseButtonDown(.RIGHT) {
                 debug_create_cell(w, {pos = auto_cast rl.GetMousePosition(), rot = rand.float32_range(0, 2*math.PI)})
@@ -116,5 +121,35 @@ flagellum_system :: proc(w: ^ecs.World) {
                 ecs.set(w, e, vel)
                 ecs.set(w, e, cell)
                 ecs.set(w, e, flag)
+        }
+}
+
+LINK_PULL_MULTIPLIER :: 1
+
+debug_link_create_system :: proc(w: ^ecs.World) {
+        q := ecs.query(w, {Selected})
+        if len(q) == 2 && rl.IsKeyPressed(.L) {
+                link_entity := ecs.create(w)
+                ecs.set(w, link_entity, Link{a = q[0], b = q[1]})
+        }
+}
+
+link_system :: proc(w: ^ecs.World) {
+        for e in ecs.query(w, {Link}) {
+                link := ecs.get(w, e, Link)
+                a_trans := ecs.get(w, link.a, Transform)
+                b_trans := ecs.get(w, link.b, Transform)
+                a_cell := ecs.get(w, link.a, Cell)
+                b_cell := ecs.get(w, link.b, Cell)
+                a_vel := ecs.get(w, link.a, Velocity)
+                b_vel := ecs.get(w, link.b, Velocity)
+
+                a_to_b := b_trans.pos - a_trans.pos
+
+                a_vel += auto_cast  a_to_b * LINK_PULL_MULTIPLIER * w.delta
+                b_vel += auto_cast -a_to_b * LINK_PULL_MULTIPLIER * w.delta
+
+                ecs.set(w, link.a, a_vel)
+                ecs.set(w, link.b, b_vel)
         }
 }

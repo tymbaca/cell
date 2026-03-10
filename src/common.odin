@@ -98,7 +98,7 @@ velocity_system :: proc(w: ^ecs.World) {
                 if cell, ok := ecs.get(w, e, Cell); ok {
                         dist_from_center += cell.radius
                 }
-                if dist_from_center > ctx.dish_radius && faces_out_of_dish(auto_cast vel, auto_cast to_center) {
+                if ecs.has(w, e, Cell) && dist_from_center > ctx.dish_radius && faces_out_of_dish(auto_cast vel, auto_cast to_center) {
                         vel = linalg.reflect(vel, auto_cast linalg.normalize(to_center))
                         pushback := linalg.normalize(to_center) * (dist_from_center - ctx.dish_radius) * w.delta * 100
                         vel += Velocity(pushback)

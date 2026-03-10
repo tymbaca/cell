@@ -43,7 +43,7 @@ ctx :: proc(w: ^ecs.World) -> ^Context {
 main :: proc() {
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "cell")
         defer rl.CloseWindow()
-        rl.SetTargetFPS(60)
+        rl.SetTargetFPS(120)
         
         cell_texture := rl.LoadTexture("resources/cell.png")
         flag_texture := rl.LoadTexture("resources/flag.png")

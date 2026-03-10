@@ -26,7 +26,8 @@ check_collisions :: proc(
         return acc[:]
 }
 
-// check_collisions_with – collision detection between two independent BVHs
+// check_collisions_with – collision detection between two independent BVHs.
+// `this` will go into `a`, `with` will go into `b`.
 check_collisions_with :: proc(
         this, with: ^Node($V, $B),
         intersect_proc: proc(a, b: V) -> bool,

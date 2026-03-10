@@ -35,11 +35,7 @@ edit_mode_system :: proc(w: ^ecs.World) {
         }
 }
 
-cell_select_system :: proc(w: ^ecs.World) {
-        if ctx(w).edit_mode != .Cells {
-                return
-        }
-
+select_system :: proc(w: ^ecs.World) {
         if !is_mouse_focused() {
                 return
         }
@@ -55,17 +51,35 @@ cell_select_system :: proc(w: ^ecs.World) {
                 }
         }
 
-        for e in ecs.query(w, {Transform, Cell}) {
-                trans := ecs.get(w, e, Transform)
-                cell := ecs.get(w, e, Cell)
+        if ctx(w).edit_mode == .Cells {
+                for e in ecs.query(w, {Transform, Cell}) {
+                        trans := ecs.get(w, e, Transform)
+                        cell := ecs.get(w, e, Cell)
 
-                if linalg.distance(auto_cast rl.GetMousePosition(), auto_cast trans.pos) < cell.radius {
-                        if ecs.has(w, e, Selected) {
-                                ecs.unset(w, e, Selected)
-                        } else {
-                                ecs.set(w, e, Selected{})
+                        if linalg.distance(auto_cast rl.GetMousePosition(), auto_cast trans.pos) < cell.radius {
+                                if ecs.has(w, e, Selected) {
+                                        ecs.unset(w, e, Selected)
+                                } else {
+                                        ecs.set(w, e, Selected{})
+                                }
+                                break
                         }
-                        break
+                }
+        }
+
+        if ctx(w).edit_mode == .Light {
+                for e in ecs.query(w, {Transform, Light}) {
+                        trans := ecs.get(w, e, Transform)
+                        light := ecs.get(w, e, Light)
+
+                        if linalg.distance(auto_cast rl.GetMousePosition(), auto_cast trans.pos) < light.radius {
+                                if ecs.has(w, e, Selected) {
+                                        ecs.unset(w, e, Selected)
+                                } else {
+                                        ecs.set(w, e, Selected{})
+                                }
+                                break
+                        }
                 }
         }
 }

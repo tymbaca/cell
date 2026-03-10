@@ -11,7 +11,7 @@ import "core:math/noise"
 Cell :: struct {
         energy:   f32,
         starving_started: Maybe(time.Tick),
-        capacity: f32,
+        max_energy: f32,
         color:    rl.Color,
         radius:   f32,
 }
@@ -54,7 +54,7 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
         radius := rand.float32_range(5, 20)
         ecs.set(w, e, Cell{
                 energy = 100, 
-                capacity = 100, 
+                max_energy = 100, 
                 color = choose([]rl.Color{rl.ORANGE, rl.WHITE, rl.YELLOW, rl.GREEN, rl.BLUE, rl.RED, rl.PURPLE, rl.PINK}),
                 radius = radius,
         })
@@ -75,6 +75,7 @@ debug_create_cell :: proc(w: ^ecs.World, trans: Transform) {
                 dragging = false,
                 radius = radius,
         })
+        ecs.set(w, e, Photosynthesis{})
 }
 
 CELL_RADIUS_MIN :: 6

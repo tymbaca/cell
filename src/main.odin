@@ -58,13 +58,15 @@ main :: proc() {
         allocator := context.allocator
         world: ecs.World
         w := &world
-        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Link, Random_Rotation, Light, Ready, Not_Ready, Selected, Draggable}, allocator)
+        ecs.init(w, {Transform, Velocity, Cell, Flagellum, Link, Photosynthesis, Random_Rotation, Light, Ready, Not_Ready, Selected, Draggable}, allocator)
         defer ecs.destroy(w)
 
         ecs.register(w, debug_system)
         ecs.register(w, debug_spawn_system)
         ecs.register(w, debug_link_create_system)
 
+        // order matters
+        ecs.register(w, bvh_system)
         ecs.register(w, cell_system)
         ecs.register(w, flagellum_system)
         ecs.register(w, link_system)
@@ -73,7 +75,7 @@ main :: proc() {
         ecs.register(w, collision_system)
         ecs.register(w, draggable_system)
         ecs.register(w, velocity_system)
-        ecs.register(w, cell_select_system)
+        ecs.register(w, select_system)
         ecs.register(w, edit_mode_system)
 
         context.allocator = mem.panic_allocator()

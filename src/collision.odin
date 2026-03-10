@@ -10,14 +10,13 @@ import "lib:ecs"
 
 COLLISION_PUSH_MULTIPLIER :: 10
 
-collision_system :: proc(w: ^ecs.World) {
+bvh_system :: proc(w: ^ecs.World) {
         ctx := (^Context)(w.userdata)
         tree: bvh.Node(collider.Circle, ecs.Entity)
 
         for e in ecs.query(w, {Cell, Transform, Velocity}) {
                 cell := ecs.get(w, e, Cell)
                 trans := ecs.get(w, e, Transform)
-                vel := ecs.get(w, e, Velocity)
 
                 cldr := collider.Circle{center = trans.pos, radius = cell.radius}
                 bvh.insert(&tree, cldr, e, 
@@ -27,7 +26,11 @@ collision_system :: proc(w: ^ecs.World) {
                 )
         }
 
-        for col in bvh.check_collisions(&tree, collider.circles_intersect, &w.frame_arena) {
+        ctx.bvh = tree
+}
+
+collision_system :: proc(w: ^ecs.World) {
+        for col in bvh.check_collisions(&ctx(w).bvh, collider.circles_intersect, &w.frame_arena) {
                 a_trans := ecs.get(w, col.a.body, Transform)
                 b_trans := ecs.get(w, col.b.body, Transform)
                 a_to_b := b_trans.pos - a_trans.pos
@@ -46,6 +49,4 @@ collision_system :: proc(w: ^ecs.World) {
                 ecs.set(w, col.a.body, a_vel)
                 ecs.set(w, col.b.body, b_vel)
         }
-
-        ctx.bvh = tree
 }

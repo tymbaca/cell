@@ -116,6 +116,10 @@ draw_lights :: proc(w: ^ecs.World) {
                         rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, light.power), 
                         rl.ColorLerp({255, 255, 255, 0}, rl.WHITE, 0),
                 )
+                
+                if ecs.has(w, e, Selected) {
+                        rl.DrawPolyLines(auto_cast trans.pos, 10, light.radius, 0, SELECT_COLOR)
+                }
         }
 }
 

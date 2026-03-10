@@ -1,6 +1,9 @@
 #+vet explicit-allocators
 package src
 
+import "core:log"
+import "lib:bvh"
+import "src:collider"
 import "core:math/linalg"
 import rl "vendor:raylib"
 import "lib:ecs"
@@ -23,7 +26,7 @@ create_light_system :: proc(w: ^ecs.World) {
         if rl.IsMouseButtonPressed(.RIGHT) {
                 e := ecs.create(w)
                 ecs.set(w, e, Light{
-                        power = 1.0,
+                        power = 0.5,
                 })
                 ecs.set(w, e, Transform{pos = mouse})
                 ecs.set(w, e, Velocity{})
@@ -55,6 +58,42 @@ create_light_system :: proc(w: ^ecs.World) {
         }
 }
 
+PHOTOSYNTHESIS_MULTIPLIER :: 500
+
 light_system :: proc(w: ^ecs.World) {
-        // for e in ecs.query(w, )
+        light_bvh: bvh.Node(collider.Circle, ecs.Entity)
+        for e in ecs.query(w, {Transform, Light}) {
+                light := ecs.get(w, e, Light)
+                trans := ecs.get(w, e, Transform)
+
+                cldr := collider.Circle{center = trans.pos, radius = light.radius}
+                bvh.insert(&light_bvh, cldr, e, 
+                        collider.calculate_bounding_circle, 
+                        collider.get_circle_growth, 
+                        &w.frame_arena,
+                )
+        }
+
+        collisions := bvh.check_collisions_with(&light_bvh, &ctx(w).bvh, collider.circles_intersect, &w.frame_arena)
+        log.debug("collisions with light", len(collisions))
+        for col in collisions {
+                light_entity := col.a.body
+                cell_entity := col.b.body
+
+                if !ecs.has(w, cell_entity, Photosynthesis) {
+                        continue
+                }
+
+                light_trans := ecs.get(w, light_entity, Transform)
+                light := ecs.get(w, light_entity, Light)
+                cell_trans := ecs.get(w, cell_entity, Transform)
+                cell := ecs.get(w, cell_entity, Cell)
+
+                cell.energy += (light.power * PHOTOSYNTHESIS_MULTIPLIER * w.delta) // TODO: smooth out
+                if cell.energy > cell.max_energy {
+                        cell.energy = cell.max_energy
+                }
+
+                ecs.set(w, cell_entity, cell)
+        }
 }

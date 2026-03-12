@@ -58,7 +58,7 @@ create_light_system :: proc(w: ^ecs.World) {
         }
 }
 
-PHOTOSYNTHESIS_MULTIPLIER :: 500
+PHOTOSYNTHESIS_MULTIPLIER :: 100
 
 light_system :: proc(w: ^ecs.World) {
         light_bvh: bvh.Node(collider.Circle, ecs.Entity)
@@ -75,7 +75,6 @@ light_system :: proc(w: ^ecs.World) {
         }
 
         collisions := bvh.check_collisions_with(&light_bvh, &ctx(w).bvh, collider.circles_intersect, &w.frame_arena)
-        log.debug("collisions with light", len(collisions))
         for col in collisions {
                 light_entity := col.a.body
                 cell_entity := col.b.body

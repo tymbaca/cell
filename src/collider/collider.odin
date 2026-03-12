@@ -1,5 +1,6 @@
 package collider
 
+import "core:math"
 import "core:testing"
 import "core:math/linalg"
 
@@ -30,7 +31,9 @@ calculate_bounding_circle_test :: proc(t: ^testing.T) {
 }
 
 get_circle_growth :: proc(into, v: Circle) -> f32 {
-        return calculate_bounding_circle(into, v).radius - into.radius
+        new_perimeter := 2 * calculate_bounding_circle(into, v).radius * math.PI
+        old_perimeter := 2 * into.radius * math.PI
+        return new_perimeter - old_perimeter
 }
 
 circles_intersect :: proc(a, b: Circle) -> bool {
